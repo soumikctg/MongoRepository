@@ -6,9 +6,10 @@ namespace MongoRepository.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EmployeeController(IEmployeeService service) : ControllerBase
+    public class EmployeeController(IEmployeeService service, IDatabaseTransactionService transactionService) : ControllerBase
     {
         private readonly IEmployeeService EmployeeService = service;
+        private readonly IDatabaseTransactionService TransactionService = transactionService;
 
         [HttpPost("AddEmployee")]
         public async Task<IActionResult> AddEmployee(Employee employee)
@@ -53,6 +54,20 @@ namespace MongoRepository.Controllers
                 return BadRequest(new { errorMessage = e.Message });
             }
 
+        }
+
+        [HttpPost("AddEmployeeAndDepartment")]
+        public async Task<IActionResult> AddEmployeeAndDept(EmployeeDepartmentDto data)
+        {
+            try
+            {
+                await TransactionService.AddEmployeeAndDepartmentAsync(data.employee, data.department);
+                return CreatedAtAction(nameof(AddEmployeeAndDept), data);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { errorMessage = e.Message });
+            }
         }
     }
 }

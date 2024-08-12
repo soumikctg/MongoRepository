@@ -22,6 +22,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped(typeof(IDatabaseContext), typeof(DatabaseContext));
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IDatabaseTransactionService, DatabaseTransactionService>();
 
 
 var app = builder.Build();

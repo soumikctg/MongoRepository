@@ -14,89 +14,203 @@ namespace MongoRepository.Repository
 
         private IMongoDatabase GetDatabase(string databaseName)
         {
-            return Client.GetDatabase(databaseName);
+            try
+            {
+                return Client.GetDatabase(databaseName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private IMongoCollection<T> GetCollection<T>(string databaseName) where T : class
         {
-            var collection = GetDatabase(databaseName).GetCollection<T>(typeof(T).Name.ToLower());
-            return collection;
-        }
-
-
-        public async Task DeleteItemByIdAsync<T>(string databaseName, string id) where T : class
-        {
-            var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
-            var collection = GetCollection<T>(databaseName);
-            await collection.DeleteOneAsync(filter);
-        }
-
-        public async Task DeleteItemsAsync<T>(string databaseName) where T : class
-        {
-            var collection = GetCollection<T>(databaseName);
-            await collection.DeleteManyAsync(new BsonDocument());
-        }
-
-        public async Task<T> GetItemByIdAsync<T>(string databaseName, string id) where T : class
-        {
-            var filter = Builders<T>.Filter.Eq("_id", new ObjectId());
-            var collection = GetCollection<T>(databaseName);
-            return await collection.Find(filter).FirstOrDefaultAsync();
-        }
-
-        public async Task<List<T>> GetItemsAsync<T>(string databaseName) where T : class
-        {
-            var collection = GetCollection<T>(databaseName);
-            return await collection.Find(new BsonDocument()).ToListAsync();
-        }
-
-        public async Task<List<T>> GetItemsByConditionAsync<T>(string databaseName, Expression<Func<T, bool>> predicate) where T : class
-        {
-            var collection = GetCollection<T>(databaseName);
-            return await collection.Find(predicate).ToListAsync();
+            try
+            {
+                var collection = GetDatabase(databaseName).GetCollection<T>(typeof(T).Name.ToLower());
+                return collection;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task SaveAsync<T>(string databaseName, T item) where T : class
         {
-            var collection = GetCollection<T>(databaseName);
-            await collection.InsertOneAsync(item);
+            try
+            {
+                var collection = GetCollection<T>(databaseName);
+                await collection.InsertOneAsync(item);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task SaveManyAsync<T>(string databaseName, List<T> items) where T : class
         {
-            var collection = GetCollection<T>(databaseName);
-            await collection.InsertManyAsync(items);
+            try
+            {
+                var collection = GetCollection<T>(databaseName);
+                await collection.InsertManyAsync(items);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task<List<T>> GetItemsAsync<T>(string databaseName) where T : class
+        {
+            try
+            {
+                var collection = GetCollection<T>(databaseName);
+                return await collection.Find(new BsonDocument()).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task<T> GetItemByIdAsync<T>(string databaseName, string id) where T : class
+        {
+            try
+            {
+                var filter = Builders<T>.Filter.Eq("_id", new ObjectId());
+                var collection = GetCollection<T>(databaseName);
+                return await collection.Find(filter).FirstOrDefaultAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task<List<T>> GetItemsByConditionAsync<T>(string databaseName, Expression<Func<T, bool>> predicate) where T : class
+        {
+            try
+            {
+                var collection = GetCollection<T>(databaseName);
+                return await collection.Find(predicate).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task DeleteItemByIdAsync<T>(string databaseName, string id) where T : class
+        {
+            try
+            {
+                var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
+                var collection = GetCollection<T>(databaseName);
+                await collection.DeleteOneAsync(filter);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task DeleteItemsAsync<T>(string databaseName) where T : class
+        {
+            try
+            {
+                var collection = GetCollection<T>(databaseName);
+                await collection.DeleteManyAsync(new BsonDocument());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task UpdateItemByIdAsync<T>(string databaseName, string id, T item) where T : class
         {
-            var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
-            var collection = GetCollection<T>(databaseName);
-            await collection.ReplaceOneAsync(filter, item);
+            try
+            {
+                var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
+                var collection = GetCollection<T>(databaseName);
+                await collection.ReplaceOneAsync(filter, item);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<List<Dictionary<string, object>>> GetFieldsOfItemsByAsync<T>(string databaseName, List<string> fields) where T : class
         {
-            var projection = Builders<T>.Projection.Include(fields.FirstOrDefault()).Exclude("Id");
-            foreach (var field in fields.Skip(1))
+            try
             {
-                projection = projection.Include(field);
+                var projection = Builders<T>.Projection.Include(fields.FirstOrDefault()).Exclude("Id");
+                foreach (var field in fields.Skip(1))
+                {
+                    projection = projection.Include(field);
+                }
+
+                var collection = GetCollection<T>(databaseName);
+                var items = await collection.Find(new BsonDocument()).Project<BsonDocument>(projection).ToListAsync();
+
+                var result = items.Select(i => i.ToDictionary()).ToList();
+                return result;
             }
-
-            var collection = GetCollection<T>(databaseName);
-            var items = await collection.Find(new BsonDocument()).Project<BsonDocument>(projection).ToListAsync();
-
-            var result = items.Select(i => i.ToDictionary()).ToList();
-            return result;
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<List<TDest>> GetProjectedItemsAsync<TSource, TDest>(string databaseName, ProjectionDefinition<TSource, TDest> projectionDef)
             where TSource : class
             where TDest : class
         {
-            var collection = GetCollection<TSource>(databaseName);
-            var result = await collection.Find(new BsonDocument()).Project(projectionDef).ToListAsync();
-            return result;
+            try
+            {
+                var collection = GetCollection<TSource>(databaseName);
+                var result = await collection.Find(new BsonDocument()).Project(projectionDef).ToListAsync();
+                return result;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task ExecuteTransactionAsync(Func<IClientSessionHandle, Task> transactionalOperations)
+        {
+            using (var session = await Client.StartSessionAsync())
+            {
+                session.StartTransaction();
+
+                try
+                {
+                    await transactionalOperations(session);
+                    await session.CommitTransactionAsync();
+                }
+                catch (Exception)
+                {
+                    await session.AbortTransactionAsync();
+                    throw;
+                }
+            }
         }
 
         // public async Task DeleteItemByIdAsync(string id)
